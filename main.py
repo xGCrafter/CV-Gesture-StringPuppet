@@ -6,42 +6,42 @@ import pygame
 from pygame import mixer
 
 pygame.mixer.init()
-pygame.mixer.music.load("CV-Guesture-Puppet/party.mp3")
+pygame.mixer.music.load("party.mp3")
 is_playing = False
 cap = cv2.VideoCapture(0)
 BaseOptions = mp.tasks.BaseOptions
-base_options = BaseOptions(model_asset_path="CV-Guesture-Puppet/hand_landmarker.task")
-thumb_x = 0
-thumb_y = 0
-index_x = 0
-index_y = 0
-middle_x = 0
-middle_y = 0
-ring_x = 0
-ring_y = 0
-pinky_x = 0
-pinky_y = 0
+base_options = BaseOptions(model_asset_path="hand_landmarker.task")
+thumbx = 0
+thumby = 0
+indexx = 0
+indexy = 0
+middlex = 0
+middley = 0
+ringx = 0
+ringy = 0
+pinkyx = 0
+pinkyy = 0
 last_print_time = time.time() 
 
 def callback(detection_result, image, timestamp):
-    global thumb_x, thumb_y, index_x, index_y, pinch, middle_x, middle_y, ring_x, ring_y, pinky_x, pinky_y 
+    global thumbx, thumby, indexx, indexy, pinch, middlex, middley, ringx, ringy, pinkyx, pinkyy 
     if len(detection_result.hand_landmarks) > 0: 
         h, w, _ = image.numpy_view().shape 
         thumb = detection_result.hand_landmarks[0][4]
-        thumb_x = int(thumb.x * w)
-        thumb_y = int(thumb.y * h)
+        thumbx = int(thumb.x * w)
+        thumby = int(thumb.y * h)
         index = detection_result.hand_landmarks[0][8]
-        index_x = int(index.x * w) 
-        index_y = int(index.y * h)
+        indexx = int(index.x * w) 
+        indexy = int(index.y * h)
         middle = detection_result.hand_landmarks[0][12]
-        middle_x = int(middle.x * w)
-        middle_y = int(middle.y * h) 
+        middlex = int(middle.x * w)
+        middley = int(middle.y * h) 
         ring = detection_result.hand_landmarks[0][16]
-        ring_x = int(ring.x * w)
-        ring_y = int(ring.y * h)
+        ringx = int(ring.x * w)
+        ringy = int(ring.y * h)
         pinky = detection_result.hand_landmarks[0][20]
-        pinky_x = int(pinky.x * w) 
-        pinky_y = int(pinky.y * h)
+        pinkyx = int(pinky.x * w) 
+        pinkyy = int(pinky.y * h)
 
 options = vision.HandLandmarkerOptions(
     base_options=base_options,
@@ -59,52 +59,51 @@ while True:
     timestamp = int(time.time() * 1000)  
     detector.detect_async(mp_image, timestamp)
 
-    head    = (middle_x, middle_y + 300)  
-    left_hand  = (index_x,  index_y  + 350)   
-    right_hand  = (ring_x,   ring_y   + 350) 
-    left_knee  = (thumb_x,  thumb_y  + 380) 
-    right_knee  = (pinky_x,  pinky_y  + 380)  
+    head    = (middlex, middley + 300)  
+    leftHand  = (indexx,  indexy  + 350)   
+    rightHand  = (ringx,   ringy   + 350) 
+    leftKnee  = (thumbx,  thumby  + 380) 
+    rightKnee  = (pinkyx,  pinkyy  + 380)  
 
-    torso_top    = (head[0], head[1] + 30)
-    torso_bottom = (head[0], head[1] + 120)
-    left_foot = (left_knee[0], left_knee[1] + 70)  
-    right_foot = (right_knee[0], right_knee[1] + 70)
+    torsoTop    = (head[0], head[1] + 30)
+    torsoBottom = (head[0], head[1] + 120)
+    leftFoot = (leftKnee[0], leftKnee[1] + 70)  
+    rightFoot = (rightKnee[0], rightKnee[1] + 70)
 
-    cv2.line(frame, (middle_x, middle_y), head,   (180,180,180), 1) 
-    cv2.line(frame, (index_x,  index_y),  left_hand, (180,180,180), 1)  
-    cv2.line(frame, (ring_x,   ring_y),   right_hand, (180,180,180), 1)  
-    cv2.line(frame, (thumb_x,  thumb_y),  left_knee, (180,180,180), 1) 
-    cv2.line(frame, (pinky_x,  pinky_y),  right_knee, (180,180,180), 1) 
+    cv2.line(frame, (middlex, middley), head,   (180,180,180), 1) 
+    cv2.line(frame, (indexx,  indexy),  leftHand, (180,180,180), 1)  
+    cv2.line(frame, (ringx,   ringy),   rightHand, (180,180,180), 1)  
+    cv2.line(frame, (thumbx,  thumby),  leftKnee, (180,180,180), 1) 
+    cv2.line(frame, (pinkyx,  pinkyy),  rightKnee, (180,180,180), 1) 
     cv2.circle(frame, head, 25, (255,255,255), -1)
-    cv2.line(frame, torso_top, torso_bottom, (255,255,255), 3)
-    cv2.line(frame, torso_top, left_hand, (255,255,255), 3)
-    cv2.line(frame, torso_top, right_hand, (255,255,255), 3) 
-    cv2.line(frame, torso_bottom, left_knee, (255,255,255), 3)
-    cv2.line(frame, torso_bottom, right_knee, (255,255,255), 3)  
-    cv2.line(frame, left_knee, left_foot, (255,255,255), 3)  
-    cv2.line(frame, right_knee, right_foot, (255,255,255), 3) 
-    cv2.circle(frame, (thumb_x,  thumb_y),  8, (2,250,70), -1)
-    cv2.circle(frame, (index_x,  index_y),  8, (2,250,70), -1)
-    cv2.circle(frame, (middle_x, middle_y), 8, (2,250,70), -1)
-    cv2.circle(frame, (ring_x,   ring_y),   8, (2,250,70), -1)
-    cv2.circle(frame, (pinky_x,  pinky_y),  8, (2,250,70), -1)
-    cv2.circle(frame, left_hand, 6, (255,255,255), -1)
-    cv2.circle(frame, right_hand, 6, (255,255,255), -1)
-    cv2.circle(frame, left_knee, 6, (255,255,255), -1)
-    cv2.circle(frame, right_knee, 6, (255,255,255), -1)
+    cv2.line(frame, torsoTop, torsoBottom, (255,255,255), 3)
+    cv2.line(frame, torsoTop, leftHand, (255,255,255), 3)
+    cv2.line(frame, torsoTop, rightHand, (255,255,255), 3) 
+    cv2.line(frame, torsoBottom, leftKnee, (255,255,255), 3)
+    cv2.line(frame, torsoBottom, rightKnee, (255,255,255), 3)
+    cv2.line(frame, leftKnee, leftFoot, (255,255,255), 3)    
+    cv2.circle(frame, (thumbx,  thumby),  8, (2,250,70), -1)
+    cv2.circle(frame, (indexx,  indexy),  8, (2,250,70), -1)
+    cv2.circle(frame, (middlex, middley), 8, (2,250,70), -1)
+    cv2.circle(frame, (ringx,   ringy),   8, (2,250,70), -1)
+    cv2.circle(frame, (pinkyx,  pinkyy),  8, (2,250,70), -1)
+    cv2.circle(frame, leftHand, 6, (255,255,255), -1)
+    cv2.circle(frame, rightHand, 6, (255,255,255), -1)
+    cv2.circle(frame, leftKnee, 6, (255,255,255), -1)
+    cv2.circle(frame, rightKnee, 6, (255,255,255), -1)
 
     current_time = time.time()
     if current_time - last_print_time >= 1.0:
         print(f"[{time.strftime('%H:%M:%S')}]")
-        print(f"  Thumb:  ({thumb_x}, {thumb_y})")
-        print(f"  Index:  ({index_x}, {index_y})")
-        print(f"  Middle: ({middle_x}, {middle_y})")
-        print(f"  Ring:   ({ring_x}, {ring_y})")
-        print(f"  Pinky:  ({pinky_x}, {pinky_y})")
+        print(f"  Thumb:  ({thumbx}, {thumby})")
+        print(f"  Index:  ({indexx}, {indexy})")
+        print(f"  Middle: ({middlex}, {middley})")
+        print(f"  Ring:   ({ringx}, {ringy})")
+        print(f"  Pinky:  ({pinkyx}, {pinkyy})")
         last_print_time = current_time
 
     # REACTION SYSTEM
-    if left_hand[1] < torso_top[1] and right_hand[1] < torso_top[1]:
+    if leftHand[1] < torsoTop[1] and rightHand[1] < torsoTop[1]:
         cv2.putText(frame, "PARTYY!", (200, 100), cv2.FONT_HERSHEY_SIMPLEX, 2, (0,255,0), 10)
         if not pygame.mixer.music.get_busy():
             pygame.mixer.music.play(-1)
